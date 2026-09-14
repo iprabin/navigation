@@ -182,3 +182,26 @@ export function back(): void {
   if (navigationRef.isReady() && navigationRef.canGoBack())
     navigationRef.goBack();
 }
+
+/**
+ * The imperative API as an object, under React Navigation's names:
+ *
+ *   const navigation = useNavigation();
+ *   navigation.navigate("Topic", { topicId: "12" });
+ *
+ * navigate() is goTo() — it walks the ancestor chain, so it also accepts an
+ * href. It is the module-level functions, so the identity is stable — safe in
+ * a dependency array, and there is nothing to subscribe to. Import
+ * goTo()/push() directly outside React; this only saves the import.
+ */
+const navigation = {
+  navigate: goTo,
+  push,
+  replace,
+  goBack: back,
+  canGoBack: () => navigationRef.isReady() && navigationRef.canGoBack(),
+} as const;
+
+export function useNavigation(): typeof navigation {
+  return navigation;
+}
