@@ -5,10 +5,16 @@ import React, {
   type ReactElement,
   type ReactNode,
 } from "react";
+import type { MaterialTopTabNavigationOptions } from "@react-navigation/material-top-tabs";
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { register, reset, validate } from "./registry";
 import { HeaderModalProvider } from "./primitives/Header";
-import type { ScreenComponent, ScreenEntry } from "./types";
+import type {
+  RouteOptions,
+  ScreenComponent,
+  ScreenEntry,
+  TabOptions,
+} from "./types";
 
 /**
  * The navigation tree. You describe *structure* here and nothing else —
@@ -80,7 +86,7 @@ type RouteProps<P> = {
   name: string;
   /** URL segment. Defaults to a kebab-cased `name`. Use ':param' for path params. */
   path?: string;
-  options?: object;
+  options?: RouteOptions;
   /** Routes that stack on top of this one. */
   children?: ReactNode;
 } & ScreenSource<P>;
@@ -91,7 +97,7 @@ export function Route<P>(_: RouteProps<P>): ReactElement | null {
 
 type TabProps = {
   name: string;
-  options?: object;
+  options?: TabOptions;
   /** Route this tab opens on, and the one deep links land behind. Defaults to the first child. Checked by validate(). */
   initialRoute?: string;
   children?: ReactNode;
@@ -105,9 +111,9 @@ type TopProps = {
   name: string;
   path?: string;
   /** The stack card hosting the bar: header, title, ... */
-  stackOptions?: object;
+  stackOptions?: NativeStackNavigationOptions;
   /** The bar itself and its pages, e.g. tabBarScrollEnabled. */
-  topTabOptions?: object;
+  topTabOptions?: MaterialTopTabNavigationOptions;
   children?: ReactNode;
 };
 
@@ -122,7 +128,7 @@ export function Modal<P>(
   _: {
     name: string;
     path?: string;
-    options?: object;
+    options?: NativeStackNavigationOptions;
   } & ScreenSource<P>,
 ): ReactElement | null {
   return null;
@@ -147,7 +153,7 @@ const childrenOf = (node: ReactNode): ReactElement[] =>
 type Context = {
   tab?: string;
   group?: boolean;
-  groupOptions?: object;
+  groupOptions?: NativeStackNavigationOptions;
   topTabGroup?: string;
   parent?: string;
 };
@@ -187,7 +193,7 @@ function walk(nodes: ReactNode, ctx: Context): void {
       walk(props.children as ReactNode, {
         ...ctx,
         group: true,
-        groupOptions: props.options as object | undefined,
+        groupOptions: props.options as NativeStackNavigationOptions | undefined,
       });
       continue;
     }
@@ -231,8 +237,10 @@ function walk(nodes: ReactNode, ctx: Context): void {
         tab: ctx.tab,
         parent: ctx.parent,
         path,
-        options: props.stackOptions as object | undefined,
-        screenOptions: props.topTabOptions as object | undefined,
+        options: props.stackOptions as NativeStackNavigationOptions | undefined,
+        screenOptions: props.topTabOptions as
+          | MaterialTopTabNavigationOptions
+          | undefined,
       });
       walk(props.children as ReactNode, {
         tab: ctx.tab,
@@ -272,7 +280,7 @@ function walk(nodes: ReactNode, ctx: Context): void {
         path,
         options:
           ctx.groupOptions || options
-            ? { ...(ctx.groupOptions as object), ...(options as object) }
+            ? { ...ctx.groupOptions, ...options }
             : undefined,
       });
       // Children of a top-tab page are pushed on the *stack*, not the tab bar.

@@ -1,5 +1,16 @@
 import type { ComponentType } from "react";
+import type { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
+import type { MaterialTopTabNavigationOptions } from "@react-navigation/material-top-tabs";
+import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import type { RouteParams } from "./index";
+
+/** A card in a tab's stack, or — inside a <Tab.Top> — a page of its bar. */
+export type RouteOptions =
+  | NativeStackNavigationOptions
+  | MaterialTopTabNavigationOptions;
+
+/** A bottom tab: title, `tabBarIcon`, badge, bar styling. */
+export type TabOptions = BottomTabNavigationOptions;
 
 export type RouteName = [keyof RouteParams] extends [never]
   ? string
@@ -58,9 +69,13 @@ export type ScreenEntry = {
   path: string;
   /** `parent.fullPath + '/' + path` — what deep links actually match. */
   fullPath: string;
+  /**
+   * Kept opaque on purpose: which navigator reads these depends on `kind`, and
+   * the typing that matters happens where they are written (<Route>, <Tab>, …).
+   */
   options?: object;
   /** 'group' only: defaults applied to every page of the top-tab bar. */
-  screenOptions?: object;
+  screenOptions?: MaterialTopTabNavigationOptions;
   /** 'tab' only: route it opens on, and what deep links land behind. */
   initialRoute?: string;
 };

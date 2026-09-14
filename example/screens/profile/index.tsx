@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { back, Modal, Route, Tab } from "app-navigation";
 import { EditProfile } from "./EditProfile";
 import { Profile } from "./Profile";
@@ -5,7 +6,19 @@ import { Button } from "react-native";
 
 export const profileRoutes = (
   <>
-    <Tab name="Profile" options={{ title: "Profile" }}>
+    <Tab
+      name="Profile"
+      options={{
+        title: "Profile",
+        tabBarIcon: ({ focused, color, size }) => (
+          <Ionicons
+            name={focused ? "person" : "person-outline"}
+            color={color}
+            size={size}
+          />
+        ),
+      }}
+    >
       <Route name="ProfileMain" component={Profile} path="profile" />
     </Tab>
     <Modal

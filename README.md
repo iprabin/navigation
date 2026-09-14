@@ -214,6 +214,29 @@ All three keys are optional. The type is `NativeStackNavigationOptions`.
 `root` covers `<Root>` cards, `modal` covers `<Modal>`, and `shared` covers
 every card in a tab's stack — its own `<Route>`s as well as shared ones.
 
+## Tab bar icons
+
+`<Tab options>` is React Navigation's `BottomTabNavigationOptions`, so the icon
+is `tabBarIcon` — declared on the tab itself, in the feature file that owns it.
+The library ships no icon set; use whichever one the app already has.
+
+```tsx
+<Tab
+  name="Home"
+  options={{
+    title: 'Home',
+    tabBarIcon: ({ focused, color, size }) => (
+      <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={size} />
+    ),
+  }}
+/>
+```
+
+`<Route options>` is `NativeStackNavigationOptions` (or
+`MaterialTopTabNavigationOptions` for a `<Tab.Top>` page), `<Modal options>` and
+`<Root options>` are `NativeStackNavigationOptions`, and `<Tab.Top>` splits its
+two: `stackOptions` for the card, `topTabOptions` for the bar.
+
 ## NavigationContainer props
 
 Everything `NavigationContainer` takes passes straight through. Only `linking`
