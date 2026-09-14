@@ -2,13 +2,16 @@ import React from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import {
+  createNativeStackNavigator,
+  type NativeStackNavigationOptions,
+} from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 // The registry is name-keyed and param types live in RouteParams, so the
 // component is opaque by the time it reaches React Navigation. A lazy() screen
 // picks up its Suspense boundary here.
-import { screenComponent as asScreen } from "./elements";
+import { screenComponent as asScreen } from "./screens";
 import {
   byKind,
   byName,
@@ -16,7 +19,6 @@ import {
   pagesOf,
   stackScreensOf,
 } from "./registry";
-import { getScreenOptions } from "./screenOptions";
 import { TABS_ROUTE } from "./linking";
 
 /**
@@ -30,6 +32,22 @@ import { TABS_ROUTE } from "./linking";
  *     ├─ root cards, siblings of the tabs
  *     └─ modals, siblings of the tabs
  */
+
+/**
+ * Defaults for the navigators synthesized below, per screen family. A route's
+ * own `options` still win.
+ */
+type ScreenOptions = {
+  root?: NativeStackNavigationOptions;
+  shared?: NativeStackNavigationOptions;
+  modal?: NativeStackNavigationOptions;
+};
+
+let configuredOptions: ScreenOptions = {};
+
+export function configureNavigationOptions(opts: ScreenOptions): void {
+  configuredOptions = opts;
+}
 
 const Root = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -79,7 +97,7 @@ function StackNavigator({ tab }: { tab: string }) {
   const initialRouteName =
     byName(tab)?.initialRoute ??
     screens.find((screen) => screen.kind === "screen")?.name;
-  const sharedDefaults = getScreenOptions().shared;
+  const sharedDefaults = configuredOptions.shared;
 
   return (
     <Stack.Navigator
@@ -130,7 +148,7 @@ function TabNavigator() {
 }
 
 export function RootNavigator() {
-  const opts = getScreenOptions();
+  const opts = configuredOptions;
   // A blurred screen stops re-rendering instead of trailing every context
   // change behind the one on top — what enableFreeze() does globally, scoped to
   // the screens we own. Override per route with `options`.

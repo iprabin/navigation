@@ -1,17 +1,11 @@
-// Self-check for the URL <-> state <-> history rules. Run: `node linking.check.ts`
+// Self-check for the URL <-> state <-> history rules. Run: `npm run check`
 import assert from "node:assert/strict";
 import { createElement, lazy } from "react";
-import {
-  buildRegistry,
-  lazy as lazyScreen,
-  Route,
-  Root,
-  Tab,
-  screenComponent,
-} from "./elements";
-import type { ScreenComponent } from "./types";
-import { byName, register, reset, validate } from "./registry";
-import { getPathFromState, getStateFromPath } from "./linking";
+import { buildRegistry, Route, Root, Tab } from "../src/tree";
+import { lazy as lazyScreen, screenComponent } from "../src/screens";
+import type { ScreenComponent } from "../src/types";
+import { byName, register, reset, validate } from "../src/registry";
+import { getPathFromState, getStateFromPath } from "../src/linking";
 
 const noop = (() => null) as never;
 

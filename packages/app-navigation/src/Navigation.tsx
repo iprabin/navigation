@@ -6,7 +6,7 @@ import {
   NavigationContainer,
   type Theme,
 } from "@react-navigation/native";
-import { buildRegistry } from "./elements";
+import { buildRegistry } from "./tree";
 import { getPathFromState, getStateFromPath, type NavState } from "./linking";
 import { navigationRef } from "./navigate";
 import { RootNavigator } from "./navigators";

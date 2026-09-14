@@ -1,4 +1,4 @@
-import React, { createContext, useContext, type ReactNode } from "react";
+import React, { useContext, type ReactNode } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import {
@@ -13,6 +13,7 @@ import type {
   NativeStackNavigationOptions,
   NativeStackNavigationProp,
 } from "@react-navigation/native-stack";
+import { ModalContext } from "./screens";
 
 type Slot = ReactNode | ((props: NativeStackHeaderProps) => ReactNode);
 
@@ -31,21 +32,6 @@ export type HeaderProps = {
   /** Anything else is a native-stack option (headerTintColor, headerLargeTitle, ...). */
   options?: NativeStackNavigationOptions;
 };
-
-const HeaderModalContext = createContext(false);
-
-/** Internal: marks a screen presented by the root modal navigator. */
-export function HeaderModalProvider({
-  children,
-}: {
-  children: ReactNode;
-}): React.ReactElement {
-  return (
-    <HeaderModalContext.Provider value>
-      {children}
-    </HeaderModalContext.Provider>
-  );
-}
 
 const render = (slot: Slot, props: NativeStackHeaderProps): ReactNode =>
   typeof slot === "function" ? slot(props) : slot;
@@ -94,7 +80,7 @@ export function HeaderBar({
 }: HeaderProps): React.ReactElement {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const isModal = useContext(HeaderModalContext);
+  const isModal = useContext(ModalContext);
   const headerProps = useHeaderProps(options);
   const Container = animated ? Animated.View : View;
   // Standard iOS modals are sheets and sit below the status bar. Android

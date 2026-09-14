@@ -11,15 +11,15 @@
 export interface RouteParams {}
 
 export * from "./types";
-export * from "./elements";
+export * from "./tree";
+export * from "./screens";
 export * from "./registry";
 export * from "./linking";
 export * from "./navigate";
 export * from "./navigators";
 export * from "./Navigation";
-export * from "./primitives/Screen";
-export * from "./primitives/Header";
-export { configureNavigationOptions } from "./screenOptions";
+export * from "./Screen";
+export * from "./Header";
 // Theming is React Navigation's, re-exported so a screen can read the current
 // palette (`useTheme().colors`) without a second import path.
 export {

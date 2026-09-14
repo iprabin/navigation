@@ -1,20 +1,9 @@
-import React, {
-  lazy as reactLazy,
-  Suspense,
-  type ComponentType,
-  type ReactElement,
-  type ReactNode,
-} from "react";
+import React, { type ReactElement, type ReactNode } from "react";
 import type { MaterialTopTabNavigationOptions } from "@react-navigation/material-top-tabs";
 import type { NativeStackNavigationOptions } from "@react-navigation/native-stack";
 import { register, reset, validate } from "./registry";
-import { HeaderModalProvider } from "./primitives/Header";
-import type {
-  RouteOptions,
-  ScreenComponent,
-  ScreenEntry,
-  TabOptions,
-} from "./types";
+import { componentOf, type ScreenLoader } from "./screens";
+import type { RouteOptions, ScreenComponent, TabOptions } from "./types";
 
 /**
  * The navigation tree. You describe *structure* here and nothing else —
@@ -39,38 +28,6 @@ import type {
  *
  * These components are never rendered; they are read as a description.
  */
-
-export type ScreenLoader<P> = () => Promise<{ default: ScreenComponent<P> }>;
-
-type ScreenParams<Component> =
-  Component extends ScreenComponent<infer P> ? P : never;
-
-/** Creates a screen loader from a module import and an optional named export. */
-export function lazy<Module extends { default: unknown }>(
-  load: () => Promise<Module>,
-): ScreenLoader<ScreenParams<Module["default"]>>;
-export function lazy<Module extends object, ExportName extends keyof Module>(
-  load: () => Promise<Module>,
-  exportName: ExportName,
-): ScreenLoader<ScreenParams<Module[ExportName]>>;
-export function lazy(
-  load: () => Promise<object>,
-  exportName: PropertyKey = "default",
-): ScreenLoader<any> {
-  return async () => {
-    const module = await load();
-    const component = (module as Record<PropertyKey, unknown>)[exportName];
-    if (
-      component == null ||
-      (typeof component !== "function" && typeof component !== "object")
-    ) {
-      throw new Error(
-        `[navigation] Lazy screen export "${String(exportName)}" is not a component.`,
-      );
-    }
-    return { default: component as ScreenComponent<any> };
-  };
-}
 
 type ScreenSource<P> =
   | { component: ScreenComponent<P>; loader?: never }
@@ -157,23 +114,6 @@ type Context = {
   topTabGroup?: string;
   parent?: string;
 };
-
-const loadedComponents = new WeakMap<
-  ScreenLoader<never>,
-  ScreenComponent<never>
->();
-
-function componentOf(props: Record<string, unknown>): ScreenEntry["component"] {
-  const loader = props.loader as ScreenLoader<never> | undefined;
-  if (!loader) return props.component as ScreenEntry["component"];
-
-  let component = loadedComponents.get(loader);
-  if (!component) {
-    component = reactLazy(loader) as ScreenComponent<never>;
-    loadedComponents.set(loader, component);
-  }
-  return component;
-}
 
 function walk(nodes: ReactNode, ctx: Context): void {
   for (const el of childrenOf(nodes)) {
@@ -302,54 +242,4 @@ export function buildRegistry(tree: ReactNode): void {
   reset();
   walk(tree, {});
   validate();
-}
-
-const LAZY = Symbol.for("react.lazy");
-const boundaries = new WeakMap<object, ComponentType<object>>();
-const modalLayouts = new WeakMap<ComponentType<object>, ComponentType<object>>();
-
-/**
- * What React Navigation actually mounts for an entry.
- *
- *   <Route name="Topic" loader={lazy(() => import('./Topic'), 'Topic')} />
- *
- * keeps that screen's module out of the startup path: Metro still bundles it,
- * but never *evaluates* it until the screen is first shown. That is the cost
- * that grows with screen count — the registry walk is microseconds.
- *
- * A lazy screen suspends on its first render, so it needs its own boundary;
- * without one the nearest ancestor suspends and the navigator above it
- * unmounts. The wrapper is cached per component because a fresh identity each
- * render would remount the screen on every navigation.
- */
-export function screenComponent(entry: ScreenEntry): ComponentType<object> {
-  const component = entry.component as unknown as ComponentType<object>;
-  let screen = component;
-  if ((component as { $$typeof?: symbol } | undefined)?.$$typeof === LAZY) {
-    let bounded = boundaries.get(component);
-    if (!bounded) {
-      bounded = (props: object) =>
-        React.createElement(
-          Suspense,
-          { fallback: null },
-          React.createElement(component, props),
-        );
-      boundaries.set(component, bounded);
-    }
-    screen = bounded;
-  }
-
-  if (entry.kind !== "modal") return screen;
-  let modal = modalLayouts.get(screen);
-  if (!modal) {
-    const Screen = screen;
-    modal = (props: object) =>
-      React.createElement(
-        HeaderModalProvider,
-        null,
-        React.createElement(Screen, props),
-      );
-    modalLayouts.set(screen, modal);
-  }
-  return modal;
 }

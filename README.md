@@ -440,13 +440,14 @@ Under `packages/app-navigation/`:
 
 | | |
 |---|---|
-| `src/elements.tsx` | `<Tab>`, `<Root>`, `<Tab.Top>`, `<Route>`, `<Modal>` and the tree walker |
+| `src/tree.tsx` | `<Tab>`, `<Root>`, `<Tab.Top>`, `<Route>`, `<Modal>` and the tree walker |
 | `src/registry.ts` | the flattened route table (names, paths, ancestors) |
 | `src/linking.ts` | URL <-> state, including the ancestor chain as history |
-| `src/navigators.tsx` | every navigator, synthesized from the registry |
+| `src/navigators.tsx` | every navigator, synthesized from the registry; `configureNavigationOptions` |
 | `src/Navigation.tsx` | the container — pass it `prefixes` and the tree |
 | `src/navigate.ts` | `goTo`, `push`, `back`, `navigationRef` |
-| `src/screenOptions.ts` | `configureNavigationOptions` |
-| `src/primitives/` | `<Screen>`, `<Header>` |
+| `src/screens.tsx` | `lazy()` and what a navigator actually mounts for a route |
+| `src/Screen.tsx`, `src/Header.tsx` | `<Screen>`, `<Header>` |
 | `bin/codegen.js` | derives `RouteParams` from the tree via the TS checker (`--watch`) |
 | `generated/routes.d.ts` | its output, referenced by `src/index.ts` |
+| `test/linking.check.ts` | self-check for the URL <-> state <-> history rules (`npm run check`) |
