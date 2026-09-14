@@ -1,5 +1,5 @@
-import { Route, Tab } from "app-navigation";
-import { ScrollView, Text } from "react-native";
+import { goTo, Route, Tab, useFocusedTopTab, useTheme } from "app-navigation";
+import { Button, ScrollView, Text } from "react-native";
 import { Trending } from "./Trending";
 import { Latest } from "./Latest";
 import { Topic } from "./Topic";
@@ -16,6 +16,27 @@ const Sports = placeholder("sports");
 const Music = placeholder("music");
 const Gaming = placeholder("gaming");
 
+/** The stack header above the bar, following whichever page is focused. */
+function ExploreTitle() {
+  const page = useFocusedTopTab("Explore");
+  const { colors } = useTheme();
+  return (
+    <Text style={{ color: colors.text, fontSize: 17, fontWeight: "600" }}>
+      {page ?? "Explore"}
+    </Text>
+  );
+}
+
+/** Header items are components too, so they read the focused page the same way. */
+function ExploreRight() {
+  const page = useFocusedTopTab("Explore");
+  return page === "Trending" ? (
+    <Button title="Topic 12" onPress={() => goTo("Topic", { topicId: "12" })} />
+  ) : (
+    <Button title={`Filter ${page ?? ""}`} onPress={() => {}} />
+  );
+}
+
 export const exploreRoutes = (
   <Tab name="Home">
     <Tab.Top
@@ -23,6 +44,8 @@ export const exploreRoutes = (
       stackOptions={{
         headerShown: true,
         title: "Explore",
+        headerTitle: () => <ExploreTitle />,
+        headerRight: () => <ExploreRight />,
         headerShadowVisible: false,
         headerBackButtonDisplayMode: "minimal",
       }}

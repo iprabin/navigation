@@ -178,6 +178,44 @@ stack, and a bar with pages. `stackOptions` is the card (header, title),
 
 Scrolling is what you want once the tabs stop fitting the screen width.
 
+### Reading the focused page
+
+`useFocusedTopTab(bar)` returns the page of a `<Tab.Top>` that is focused
+right now, and re-renders on every swipe or tap of the bar. It reads the
+container, so it works anywhere under `<Navigation>` — including the header
+*above* the bar, which is a stack card and has no other way to see it:
+
+```tsx
+function ExploreTitle() {
+  const page = useFocusedTopTab('Explore'); // 'Trending' | 'Latest' | …
+  return <Text>{page ?? 'Explore'}</Text>;
+}
+
+<Tab.Top
+  name="Explore"
+  stackOptions={{ headerShown: true, headerTitle: () => <ExploreTitle /> }}
+>
+```
+
+`headerLeft` and `headerRight` are component slots as well, so a bar item
+follows the page the same way — put the hook in the item, not in the options:
+
+```tsx
+function ExploreRight() {
+  const page = useFocusedTopTab('Explore');
+  return page === 'Trending' ? <ShareButton /> : <FilterButton page={page} />;
+}
+
+stackOptions={{ headerShown: true, headerRight: () => <ExploreRight /> }}
+```
+
+The options object itself is read once, so don't try to branch inside it — the
+slot component re-renders on its own. `headerLeft` replaces the native back
+button, so render your own back affordance if the card can be pushed onto.
+
+`focusedTopTab('Explore')` is the same value outside React — analytics, or a
+`goTo()` decision. Both are `undefined` until that bar is mounted.
+
 ## Modal screens
 
 ```tsx
@@ -445,7 +483,7 @@ Under `packages/app-navigation/`:
 | `src/linking.ts` | URL <-> state, including the ancestor chain as history |
 | `src/navigators.tsx` | every navigator, synthesized from the registry; `configureNavigationOptions` |
 | `src/Navigation.tsx` | the container — pass it `prefixes` and the tree |
-| `src/navigate.ts` | `goTo`, `push`, `back`, `navigationRef` |
+| `src/navigate.ts` | `goTo`, `push`, `back`, `useFocusedTopTab`, `navigationRef` |
 | `src/screens.tsx` | `lazy()` and what a navigator actually mounts for a route |
 | `src/Screen.tsx`, `src/Header.tsx` | `<Screen>`, `<Header>` |
 | `bin/codegen.js` | derives `RouteParams` from the tree via the TS checker (`--watch`) |

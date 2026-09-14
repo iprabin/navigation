@@ -1,6 +1,7 @@
+import { useSyncExternalStore } from "react";
 import { createNavigationContainerRef } from "@react-navigation/native";
 import { byName, chainOf, firstTab } from "./registry";
-import { matchPath, TABS_ROUTE } from "./linking";
+import { findRoute, matchPath, TABS_ROUTE, type NavState } from "./linking";
 import type { ParamsOf, RouteName } from "./types";
 
 type RouteMap = Record<string, object | undefined>;
@@ -63,13 +64,45 @@ export function goTo<N extends RouteName>(name: N, ...args: Args<N>): void {
   });
 }
 
+/** The focused child of a route anywhere in the tree, if it is mounted. */
+function focusedChildOf(name: string): string | undefined {
+  const root = navigationRef.isReady()
+    ? (navigationRef.getRootState() as NavState)
+    : undefined;
+  const state = root && findRoute(root, name)?.state;
+  return state?.routes[state.index ?? 0]?.name;
+}
+
 /** Which bottom tab is focused right now, if the container is mounted. */
 function currentTab(): string | undefined {
-  const root = navigationRef.isReady()
-    ? navigationRef.getRootState()
-    : undefined;
-  const tabs = root?.routes.find((route) => route.name === TABS_ROUTE)?.state;
-  return tabs?.routes[tabs.index ?? 0]?.name;
+  return focusedChildOf(TABS_ROUTE);
+}
+
+/**
+ * Which page of a `<Tab.Top>` bar is focused, for code outside React —
+ * analytics, a goTo() decision. `undefined` until that bar is mounted.
+ */
+export function focusedTopTab<N extends RouteName>(
+  group: N,
+): RouteName | undefined {
+  return focusedChildOf(group) as RouteName | undefined;
+}
+
+/**
+ * The same, as a hook: re-renders on every swipe or tap of the bar. Readable
+ * from anywhere under <Navigation>, not just from inside the bar.
+ *
+ *   const page = useFocusedTopTab("Explore"); // 'Trending' | 'Latest' | ...
+ */
+export function useFocusedTopTab<N extends RouteName>(
+  group: N,
+): RouteName | undefined {
+  const read = () => focusedTopTab(group);
+  return useSyncExternalStore(
+    (onChange) => navigationRef.addListener("state", onChange),
+    read,
+    read,
+  );
 }
 
 /** One step back in the current stack. No-op at the root, like the OS back gesture. */

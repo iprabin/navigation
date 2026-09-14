@@ -105,6 +105,16 @@ export function getStateFromPath(path: string): NavState | undefined {
   };
 }
 
+/** The route with this name, at any depth of a navigation state. */
+export function findRoute(state: NavState, name: string): NavRoute | undefined {
+  for (const route of state.routes) {
+    if (route.name === name) return route;
+    const found = route.state && findRoute(route.state, name);
+    if (found) return found;
+  }
+  return undefined;
+}
+
 function focusedRoute(state: NavState): NavRoute | undefined {
   const route = state.routes[state.index ?? state.routes.length - 1];
   if (!route) return undefined;

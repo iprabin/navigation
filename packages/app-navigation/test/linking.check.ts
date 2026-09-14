@@ -5,7 +5,7 @@ import { buildRegistry, Route, Root, Tab } from "../src/tree";
 import { lazy as lazyScreen, screenComponent } from "../src/screens";
 import type { ScreenComponent } from "../src/types";
 import { byName, register, reset, validate } from "../src/registry";
-import { getPathFromState, getStateFromPath } from "../src/linking";
+import { findRoute, getPathFromState, getStateFromPath } from "../src/linking";
 
 const noop = (() => null) as never;
 
@@ -212,6 +212,46 @@ assert.deepEqual(
   getStateFromPath("/contact")?.routes.map((r) => r.name),
   ["Tabs", "Contact"],
   "a root card is a sibling of Tabs",
+);
+
+// What useFocusedTopTab() reads: the bar's focused page, found at any depth.
+const mounted = {
+  routes: [
+    {
+      name: "Tabs",
+      state: {
+        routes: [
+          {
+            name: "Home",
+            state: {
+              index: 1,
+              routes: [
+                { name: "HomeMain" },
+                {
+                  name: "Explore",
+                  state: {
+                    index: 1,
+                    routes: [{ name: "Trending" }, { name: "Latest" }],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+};
+const bar = findRoute(mounted, "Explore")?.state;
+assert.equal(
+  bar?.routes[bar.index ?? 0]?.name,
+  "Latest",
+  "the focused page of a top-tab bar is readable from the container state",
+);
+assert.equal(
+  findRoute(mounted, "Nope"),
+  undefined,
+  "an unmounted bar reads undefined",
 );
 
 console.log("linking.check.ts: ok");
