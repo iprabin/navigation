@@ -20,3 +20,11 @@ export * from "./Navigation";
 export * from "./primitives/Screen";
 export * from "./primitives/Header";
 export { configureNavigationOptions } from "./screenOptions";
+// Theming is React Navigation's, re-exported so a screen can read the current
+// palette (`useTheme().colors`) without a second import path.
+export {
+  useTheme,
+  DefaultTheme,
+  DarkTheme,
+  type Theme,
+} from "@react-navigation/native";

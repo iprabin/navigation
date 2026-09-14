@@ -1,6 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
@@ -43,8 +44,17 @@ function TopTabNavigator({
   safeTop: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  // The inset strip sits above the tab bar, so it takes the bar's color, not
+  // the page's — otherwise dark mode shows a seam under the notch.
+  const { colors } = useTheme();
   return (
-    <View style={{ flex: 1, paddingTop: safeTop ? insets.top : 0 }}>
+    <View
+      style={{
+        flex: 1,
+        paddingTop: safeTop ? insets.top : 0,
+        backgroundColor: colors.card,
+      }}
+    >
       {/* Top tabs mount every page at once unless told otherwise (unlike
           bottom tabs, which are already lazy). */}
       <TopTabs.Navigator

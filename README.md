@@ -214,6 +214,52 @@ All three keys are optional. The type is `NativeStackNavigationOptions`.
 `root` covers `<Root>` cards, `modal` covers `<Modal>`, and `shared` covers
 every card in a tab's stack — its own `<Route>`s as well as shared ones.
 
+## NavigationContainer props
+
+Everything `NavigationContainer` takes passes straight through. Only `linking`
+is off-limits — it is derived from the tree. `theme` is accepted and forwarded,
+widened to also take `{ light, dark }` (see below).
+
+```tsx
+<Navigation
+  prefixes={['myapp://']}
+  onReady={() => SplashScreen.hide()}
+  onStateChange={(state) => analytics.screen(state)}
+  fallback={<Splash />}
+>
+  {routes}
+</Navigation>
+```
+
+## Dark and light theme
+
+Nothing to switch on: the app follows the OS setting, using React Navigation's
+default light and dark palettes. Headers, tab bars, cards and the JS `<Header>`
+all read from it.
+
+Pass your own to override:
+
+```tsx
+import { Navigation, DefaultTheme, DarkTheme } from 'app-navigation';
+
+const light = { ...DefaultTheme, colors: { ...DefaultTheme.colors, primary: '#0a7' } };
+const dark = { ...DarkTheme, colors: { ...DarkTheme.colors, primary: '#0fb' } };
+
+<Navigation prefixes={[…]} theme={{ light, dark }}>{routes}</Navigation>
+```
+
+Pass a single theme instead of `{ light, dark }` to pin the app to it and ignore
+the OS setting.
+
+Your own screens read the current palette with `useTheme()`:
+
+```tsx
+import { useTheme } from 'app-navigation';
+
+const { colors, dark } = useTheme();
+<View style={{ backgroundColor: colors.background }} />
+```
+
 ## Screens and headers
 
 ```tsx

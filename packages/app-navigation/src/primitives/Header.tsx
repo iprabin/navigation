@@ -5,6 +5,7 @@ import {
   useNavigation,
   useNavigationState,
   useRoute,
+  useTheme,
 } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type {
@@ -92,6 +93,7 @@ export function HeaderBar({
   options = {},
 }: HeaderProps): React.ReactElement {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const isModal = useContext(HeaderModalContext);
   const headerProps = useHeaderProps(options);
   const Container = animated ? Animated.View : View;
@@ -104,7 +106,7 @@ export function HeaderBar({
   ) : (
     <View style={styles.row}>
       <View style={styles.side}>{render(left, headerProps)}</View>
-      <Text numberOfLines={1} style={styles.title}>
+      <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>
         {title ?? ""}
       </Text>
       <View style={[styles.side, styles.right]}>
@@ -117,6 +119,7 @@ export function HeaderBar({
     <Container
       entering={animated ? FadeIn.duration(180) : undefined}
       style={{
+        backgroundColor: colors.card,
         paddingTop: shouldInsetTop ? insets.top : 0,
         paddingLeft: insets.left,
         paddingRight: insets.right,
