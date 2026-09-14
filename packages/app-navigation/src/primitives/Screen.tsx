@@ -17,10 +17,19 @@ const isHeader = (node: ReactNode): node is ReactElement<HeaderProps> =>
 
 /** Cheap change detector: visible props matter, closures are read via ref. */
 const signature = (value: unknown): string =>
-  JSON.stringify(
-    React.isValidElement(value) ? (value.props as object) : value,
-    (_key, v) => (typeof v === "function" ? "fn" : v),
-  ) ?? "";
+  JSON.stringify(value, (_key, v) => {
+    if (typeof v === "function") return "fn";
+    // Elements are unwrapped at every depth: a raw element carries `_owner`,
+    // a Fiber with cyclical links that JSON.stringify chokes on.
+    if (React.isValidElement(v)) {
+      const type = v.type as { displayName?: string; name?: string };
+      return {
+        type: typeof v.type === "string" ? v.type : type.displayName ?? type.name,
+        props: v.props,
+      };
+    }
+    return v;
+  }) ?? "";
 
 /**
  * Wraps a screen body and picks up its optional `<Header>`.
