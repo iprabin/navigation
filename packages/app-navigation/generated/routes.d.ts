@@ -4,11 +4,16 @@ declare module 'app-navigation' {
     Contact: undefined;
     EditProfile: undefined;
     Explore: undefined;
+    Following: undefined;
+    Gaming: undefined;
     Home: undefined;
     HomeMain: undefined;
     Latest: undefined;
+    Music: undefined;
+    News: undefined;
     Profile: undefined;
     ProfileMain: undefined;
+    Sports: undefined;
     Test: undefined;
     Topic: { topicId: string; };
     Trending: undefined;

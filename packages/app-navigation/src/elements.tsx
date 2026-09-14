@@ -104,7 +104,10 @@ function TabImpl(_: TabProps): ReactElement | null {
 type TopProps = {
   name: string;
   path?: string;
-  options?: object;
+  /** The stack card hosting the bar: header, title, ... */
+  stackOptions?: object;
+  /** The bar itself and its pages, e.g. tabBarScrollEnabled. */
+  topTabOptions?: object;
   children?: ReactNode;
 };
 
@@ -228,7 +231,8 @@ function walk(nodes: ReactNode, ctx: Context): void {
         tab: ctx.tab,
         parent: ctx.parent,
         path,
-        options,
+        options: props.stackOptions as object | undefined,
+        screenOptions: props.topTabOptions as object | undefined,
       });
       walk(props.children as ReactNode, {
         tab: ctx.tab,

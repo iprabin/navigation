@@ -59,6 +59,8 @@ export type ScreenEntry = {
   /** `parent.fullPath + '/' + path` — what deep links actually match. */
   fullPath: string;
   options?: object;
+  /** 'group' only: defaults applied to every page of the top-tab bar. */
+  screenOptions?: object;
   /** 'tab' only: route it opens on, and what deep links land behind. */
   initialRoute?: string;
 };

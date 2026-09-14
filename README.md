@@ -159,6 +159,25 @@ export const contactRoutes = (
 `options` accepts `NativeStackNavigationOptions` and is merged into every
 child route — route-specific options override the group defaults.
 
+### Top-tab bar options
+
+`<Tab.Top>` has two option slots, because it is two things: a card in the
+stack, and a bar with pages. `stackOptions` is the card (header, title),
+`topTabOptions` is the bar and its pages:
+
+```tsx
+<Tab.Top
+  name="Explore"
+  stackOptions={{ headerShown: true, title: 'Explore' }}
+  topTabOptions={{
+    tabBarScrollEnabled: true,
+    tabBarItemStyle: { width: 'auto' },
+  }}
+>
+```
+
+Scrolling is what you want once the tabs stop fitting the screen width.
+
 ## Modal screens
 
 ```tsx

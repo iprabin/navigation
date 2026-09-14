@@ -45,7 +45,11 @@ function TopTabNavigator({
   const insets = useSafeAreaInsets();
   return (
     <View style={{ flex: 1, paddingTop: safeTop ? insets.top : 0 }}>
-      <TopTabs.Navigator>
+      {/* Top tabs mount every page at once unless told otherwise (unlike
+          bottom tabs, which are already lazy). */}
+      <TopTabs.Navigator
+        screenOptions={{ lazy: true, ...byName(group)?.screenOptions }}
+      >
         {pagesOf(group).map((page) => (
           <TopTabs.Screen
             key={page.name}
@@ -68,7 +72,10 @@ function StackNavigator({ tab }: { tab: string }) {
   const sharedDefaults = getScreenOptions().shared;
 
   return (
-    <Stack.Navigator initialRouteName={initialRouteName}>
+    <Stack.Navigator
+      initialRouteName={initialRouteName}
+      screenOptions={{ freezeOnBlur: true }}
+    >
       {screens.map((screen) => (
         <Stack.Screen
           key={screen.name}
@@ -102,7 +109,7 @@ function StackNavigator({ tab }: { tab: string }) {
 
 function TabNavigator() {
   return (
-    <Tabs.Navigator screenOptions={{ headerShown: false }}>
+    <Tabs.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
       {byKind("tab").map((tab) => (
         <Tabs.Screen key={tab.name} name={tab.name} options={tab.options}>
           {() => <StackNavigator tab={tab.name} />}
@@ -114,8 +121,11 @@ function TabNavigator() {
 
 export function RootNavigator() {
   const opts = getScreenOptions();
+  // A blurred screen stops re-rendering instead of trailing every context
+  // change behind the one on top — what enableFreeze() does globally, scoped to
+  // the screens we own. Override per route with `options`.
   return (
-    <Root.Navigator screenOptions={{ headerShown: false }}>
+    <Root.Navigator screenOptions={{ headerShown: false, freezeOnBlur: true }}>
       {/* A children function, not `component`: core's StaticContainer memoizes a
           screen on its `render` identity, so a stable component here would freeze
           the whole tab subtree and Fast Refresh of the tree would never reach it. */}
