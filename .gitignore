@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+dist/
+*.log
+.DS_Store
+
+# native projects — `npx expo prebuild` regenerates these
+**/ios/
+**/android/

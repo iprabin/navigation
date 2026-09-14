@@ -1,0 +1,19 @@
+{
+  "name": "navigation-workspace",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "example"
+  ],
+  "scripts": {
+    "start": "npm start --workspace example",
+    "ios": "npm run ios --workspace example",
+    "android": "npm run android --workspace example",
+    "check": "npm run check --workspace app-navigation",
+    "typecheck": "npm run typecheck --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "typescript": "~6.0.3"
+  }
+}

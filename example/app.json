@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "app-navigation",
+    "slug": "app-navigation",
+    "scheme": "myapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.appnavigation"
+    },
+    "android": {
+      "package": "com.yourcompany.appnavigation"
+    }
+  }
+}
