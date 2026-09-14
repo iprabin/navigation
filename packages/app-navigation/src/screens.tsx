@@ -90,30 +90,30 @@ export function screenComponent(entry: ScreenEntry): ComponentType<object> {
   const component = entry.component as unknown as ComponentType<object>;
   let screen = component;
   if ((component as { $$typeof?: symbol } | undefined)?.$$typeof === LAZY) {
-    let bounded = boundaries.get(component);
-    if (!bounded) {
-      bounded = (props: object) =>
+    let Bounded = boundaries.get(component);
+    if (!Bounded) {
+      Bounded = (props: object) =>
         React.createElement(
           Suspense,
           { fallback: null },
           React.createElement(component, props),
         );
-      boundaries.set(component, bounded);
+      boundaries.set(component, Bounded);
     }
-    screen = bounded;
+    screen = Bounded;
   }
 
   if (entry.kind !== "modal") return screen;
-  let modal = modalLayouts.get(screen);
-  if (!modal) {
+  let Modal = modalLayouts.get(screen);
+  if (!Modal) {
     const Screen = screen;
-    modal = (props: object) =>
+    Modal = (props: object) =>
       React.createElement(
         ModalContext.Provider,
         { value: true },
         React.createElement(Screen, props),
       );
-    modalLayouts.set(screen, modal);
+    modalLayouts.set(screen, Modal);
   }
-  return modal;
+  return Modal;
 }
