@@ -7,3 +7,6 @@ dist/
 # native projects — `npx expo prebuild` regenerates these
 **/ios/
 **/android/
+
+# copied in by the library's prepack; the root README is the source
+packages/app-navigation/README.md

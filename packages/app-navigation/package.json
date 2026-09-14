@@ -20,7 +20,7 @@
     "check": "tsx src/linking.check.ts",
     "routes:types": "node bin/codegen.js",
     "typecheck": "tsc --noEmit",
-    "prepack": "node bin/codegen.js --reset --out generated/routes.d.ts"
+    "prepack": "cp ../../README.md README.md && node bin/codegen.js --reset --out generated/routes.d.ts"
   },
   "keywords": [
     "react-native",
