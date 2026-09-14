@@ -18,6 +18,7 @@
   "sideEffects": false,
   "scripts": {
     "check": "tsx test/linking.check.ts",
+    "bench": "tsx test/layout.bench.tsx",
     "routes:types": "node bin/codegen.js",
     "typecheck": "tsc --noEmit",
     "prepack": "cp ../../README.md README.md && node bin/codegen.js --reset --out generated/routes.d.ts"

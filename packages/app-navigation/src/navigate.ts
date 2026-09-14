@@ -169,12 +169,13 @@ export function useFocusedTopTab<N extends RouteName>(
   group: N,
 ): RouteName | undefined {
   const read = () => focusedTopTab(group);
-  return useSyncExternalStore(
-    (onChange) => navigationRef.addListener("state", onChange),
-    read,
-    read,
-  );
+  // Module-level `subscribe`: an inline one is a new identity every render, so
+  // the listener would be torn down and re-added on each of them.
+  return useSyncExternalStore(subscribeToState, read, read);
 }
+
+const subscribeToState = (onChange: () => void) =>
+  navigationRef.addListener("state", onChange);
 
 /** One step back in the current stack. No-op at the root, like the OS back gesture. */
 export function back(): void {
