@@ -10,16 +10,39 @@
  */
 export interface RouteParams {}
 
-export * from "./types";
-export * from "./tree";
-export * from "./screens";
-export * from "./registry";
-export * from "./linking";
-export * from "./navigate";
-export * from "./navigators";
-export * from "./Navigation";
-export * from "./Screen";
-export * from "./Header";
+/**
+ * The public API. Everything else under src/ — the registry, the linking
+ * table, the synthesized navigators — is how this package works, not what it
+ * offers, so it is not re-exported: an app that reaches for it would break on
+ * an internal refactor.
+ */
+export { Tab, Route, Modal, Root } from "./tree";
+export { Navigation } from "./Navigation";
+export { Screen } from "./Screen";
+export { Header, type HeaderProps } from "./Header";
+export { Link, Redirect, type LinkProps, type LinkHref } from "./Link";
+export {
+  goTo,
+  push,
+  replace,
+  dismissTo,
+  back,
+  useNavigation,
+  focusedTopTab,
+  useFocusedTopTab,
+  navigationRef,
+  type Href,
+} from "./navigate";
+export { lazy } from "./screens";
+export { configureNavigationOptions } from "./navigators";
+export type {
+  ScreenProps,
+  ScreenComponent,
+  RouteName,
+  ParamsOf,
+  RouteOptions,
+  TabOptions,
+} from "./types";
 // Theming is React Navigation's, re-exported so a screen can read the current
 // palette (`useTheme().colors`) without a second import path.
 export {

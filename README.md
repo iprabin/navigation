@@ -409,6 +409,7 @@ goTo('/trending/topic?topicId=12');    // same thing, URL-first
 goTo('myapp://trending/topic');        // a full deep link works too
 push('Topic', { topicId: '13' });      // a second Topic card on top
 replace('Topic', { topicId: '13' });   // swap the current card, no way back
+dismissTo('HomeMain');                 // pop back to it, closing what is above
 back();                                // one step, no-op at the root
 ```
 
@@ -425,8 +426,51 @@ throw for a `<Tab>`, a `<Tab.Top>` bar or one of its pages, which are not
 stack cards. All three take a route name (typed, with typed params) or a URL;
 a URL that matches nothing throws.
 
-React Navigation's `<Link>` and `useLinkTo` work too; the same linking config
-drives them.
+`dismissTo` is the modal or wizard "Close": it pops back to a card already
+below in the stack. If that card is not in the stack it is pushed instead, so
+the user still lands there.
+
+### `<Link>`
+
+When the navigation *is* the interaction, skip the onPress closure:
+
+```tsx
+import { Link } from 'app-navigation';
+
+<Link href="/trending">Trending</Link>                                  {/* a URL */}
+<Link href="Trending">Trending</Link>                                   {/* a route name */}
+<Link href={{ pathname: 'Topic', params: { topicId: '12' } }}>Topic</Link>
+```
+
+A bare name is only accepted when the route takes no required params — `Topic`
+needs the object form, the same rule `goTo()` enforces on its arguments.
+
+`<Link>` renders a `<Text>` and takes every Text prop. `push`, `replace` and
+`dismissTo` swap which action it dispatches; `asChild` hands the press to your
+own component instead of rendering the Text:
+
+```tsx
+<Link href="/trending" replace style={{ color: colors.primary }}>Trending</Link>
+
+<Link href="/trending" asChild>
+  <Pressable><Text>Trending</Text></Pressable>
+</Link>
+```
+
+`onPress` still runs first, and `event.preventDefault()` inside it cancels the
+navigation.
+
+### `<Redirect>`
+
+```tsx
+if (!user) return <Redirect href="/login" />;
+```
+
+Navigates on mount, so a guard is a `return` rather than an effect. It replaces
+the current card, so back does not land on the screen that redirects.
+
+React Navigation's own `<Link>` and `useLinkTo` work too; the same linking
+config drives them.
 
 ## Deep links
 
@@ -497,7 +541,8 @@ Under `packages/app-navigation/`:
 | `src/linking.ts` | URL <-> state, including the ancestor chain as history |
 | `src/navigators.tsx` | every navigator, synthesized from the registry; `configureNavigationOptions` |
 | `src/Navigation.tsx` | the container — pass it `prefixes` and the tree |
-| `src/navigate.ts` | `goTo`, `push`, `replace`, `back`, `useFocusedTopTab`, `navigationRef` |
+| `src/navigate.ts` | `goTo`, `push`, `replace`, `dismissTo`, `back`, `useFocusedTopTab`, `navigationRef` |
+| `src/Link.tsx` | `<Link>` and `<Redirect>` |
 | `src/screens.tsx` | `lazy()` and what a navigator actually mounts for a route |
 | `src/Screen.tsx`, `src/Header.tsx` | `<Screen>`, `<Header>` |
 | `bin/codegen.js` | derives `RouteParams` from the tree via the TS checker (`--watch`) |

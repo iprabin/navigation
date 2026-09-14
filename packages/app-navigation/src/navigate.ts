@@ -101,7 +101,7 @@ export function goTo(name: string, params?: object): void {
  * <Root> card or <Modal>.
  */
 function stackAction(
-  action: "push" | "replace",
+  action: "push" | "replace" | "popTo",
   name: string,
   params?: object,
 ): void {
@@ -133,6 +133,17 @@ export function replace<N extends RouteName>(name: N, ...args: Args<N>): void;
 export function replace(href: Href): void;
 export function replace(name: string, params?: object): void {
   stackAction("replace", name, params);
+}
+
+/**
+ * Back to a route that is already below in the stack, closing every card above
+ * it — the "Close" of a modal or of a wizard. If it is not in the stack after
+ * all, it is pushed, so the user still lands there.
+ */
+export function dismissTo<N extends RouteName>(name: N, ...args: Args<N>): void;
+export function dismissTo(href: Href): void;
+export function dismissTo(name: string, params?: object): void {
+  stackAction("popTo", name, params);
 }
 
 /** The focused child of a route anywhere in the tree, if it is mounted. */
@@ -198,6 +209,7 @@ const navigation = {
   navigate: goTo,
   push,
   replace,
+  popTo: dismissTo,
   goBack: back,
   canGoBack: () => navigationRef.isReady() && navigationRef.canGoBack(),
 } as const;
