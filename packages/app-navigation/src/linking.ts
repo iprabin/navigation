@@ -10,13 +10,44 @@ type Match = { entry: ScreenEntry; params: Record<string, string> };
 
 const segmentsOf = (path: string) => path.split("/").filter(Boolean);
 
-/** Deep-linkable entries, longest path first so /a/b beats /a. */
+const paramsIn = (path: string) =>
+  segmentsOf(path).filter((seg) => seg.startsWith(":")).length;
+
+/**
+ * Deep-linkable entries, longest path first so /a/b beats /a, and — at equal
+ * length — the one with fewer ':params', so /item/new beats /item/:id.
+ */
 function table(): ScreenEntry[] {
   return all()
     .filter((e) => e.kind !== "tab" && e.fullPath)
     .sort(
-      (a, b) => segmentsOf(b.fullPath).length - segmentsOf(a.fullPath).length,
+      (a, b) =>
+        segmentsOf(b.fullPath).length - segmentsOf(a.fullPath).length ||
+        paramsIn(a.fullPath) - paramsIn(b.fullPath),
     );
+}
+
+let prefixes: string[] = [];
+
+/** The schemes/domains <Navigation> answers to, so push('https://…') resolves. */
+export const setPrefixes = (next: string[]): void => {
+  prefixes = next;
+};
+
+/**
+ * A full deep link -> the path matchPath() understands. A declared prefix is
+ * stripped whole (`https://myapp.com`, `exp://127.0.0.1:8081/--`); anything
+ * else falls back to dropping just the scheme, which is right for
+ * `myapp://trending`.
+ */
+export function stripPrefix(href: string): string {
+  const prefix = prefixes
+    .filter((p) => href.startsWith(p))
+    .sort((a, b) => b.length - a.length)[0];
+  const rest = prefix
+    ? href.slice(prefix.length)
+    : href.replace(/^[a-z][a-z0-9+.-]*:\/\//i, "/");
+  return rest.startsWith("/") ? rest : `/${rest}`;
 }
 
 export function matchPath(path: string): Match | undefined {
@@ -53,14 +84,8 @@ export function getStateFromPath(path: string): NavState | undefined {
   if (!match) return undefined;
   const { entry, params } = match;
 
-  if (entry.kind === "modal") {
-    return {
-      index: 1,
-      routes: [{ name: TABS_ROUTE }, { name: entry.name, params }],
-    };
-  }
-
-  if (entry.kind === "root") {
+  // Modals and <Root> cards are siblings of the tabs, not inside one.
+  if (entry.kind === "modal" || entry.kind === "root") {
     return {
       index: 1,
       routes: [{ name: TABS_ROUTE }, { name: entry.name, params }],

@@ -7,7 +7,12 @@ import {
   type Theme,
 } from "@react-navigation/native";
 import { buildRegistry } from "./tree";
-import { getPathFromState, getStateFromPath, type NavState } from "./linking";
+import {
+  getPathFromState,
+  getStateFromPath,
+  setPrefixes,
+  type NavState,
+} from "./linking";
 import { navigationRef } from "./navigate";
 import { RootNavigator } from "./navigators";
 
@@ -55,6 +60,8 @@ export function Navigation({
   // Fast Refresh of the tree takes effect, while `linking` keeps its identity
   // (its two functions read the registry when called).
   buildRegistry(children);
+  // What push('https://myapp.com/x') strips before matching.
+  setPrefixes(prefixes);
   const linking = useMemo(
     () => ({
       prefixes,

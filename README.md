@@ -402,18 +402,31 @@ config's own `projectRoot`, and returns the config untouched.
 ## Navigating
 
 ```tsx
-import { goTo, push, back } from 'app-navigation';
+import { goTo, push, replace, back } from 'app-navigation';
 
-goTo('Topic', { topicId: '12' });   // typed name, typed params
-push('/trending/topic?topicId=12'); // same thing, URL-first
-push('myapp://trending/topic');     // any scheme:// is stripped first
-back();                             // one step, no-op at the root
+goTo('Topic', { topicId: '12' });      // typed name, typed params
+goTo('/trending/topic?topicId=12');    // same thing, URL-first
+goTo('myapp://trending/topic');        // a full deep link works too
+push('Topic', { topicId: '13' });      // a second Topic card on top
+replace('Topic', { topicId: '13' });   // swap the current card, no way back
+back();                                // one step, no-op at the root
 ```
 
-`goTo` walks the route's ancestor chain, so arriving from anywhere leaves the
-same back stack a deep link would. `push` just resolves the URL to a name and
-params and calls `goTo` — it throws if nothing matches. React Navigation's
-`<Link>` and `useLinkTo` work too; the same linking config drives them.
+| | Where it lands | Ancestors | The route is already open |
+|---|---|---|---|
+| `goTo` | anywhere — any tab, bar, modal or root card | visited first, so the back stack matches a deep link | returns to it |
+| `push` | on top of the focused stack | none | stacks a second copy |
+| `replace` | in place of the focused card | none | irrelevant — the current card is gone |
+
+`goTo` is the one to reach for: it is the only one that can cross to another
+tab or open a top-tab page, because it is the only one that walks the chain.
+`push` and `replace` are stack actions on what the user is looking at — they
+throw for a `<Tab>`, a `<Tab.Top>` bar or one of its pages, which are not
+stack cards. All three take a route name (typed, with typed params) or a URL;
+a URL that matches nothing throws.
+
+React Navigation's `<Link>` and `useLinkTo` work too; the same linking config
+drives them.
 
 ## Deep links
 
@@ -425,8 +438,9 @@ from the tree, so there is no second table to keep in sync.
 ```
 
 A URL is matched against the flattened route table (longest path first, so
-`/trending/topic` wins over `/trending`), then the target's ancestor chain is
-expanded into a real back stack:
+`/trending/topic` wins over `/trending`; at equal length a static segment wins,
+so `/item/new` is not `/item/:id` with `id: 'new'`), then the target's ancestor
+chain is expanded into a real back stack:
 
 | Link | Lands on | Back stack it restores |
 |---|---|---|
@@ -483,7 +497,7 @@ Under `packages/app-navigation/`:
 | `src/linking.ts` | URL <-> state, including the ancestor chain as history |
 | `src/navigators.tsx` | every navigator, synthesized from the registry; `configureNavigationOptions` |
 | `src/Navigation.tsx` | the container — pass it `prefixes` and the tree |
-| `src/navigate.ts` | `goTo`, `push`, `back`, `useFocusedTopTab`, `navigationRef` |
+| `src/navigate.ts` | `goTo`, `push`, `replace`, `back`, `useFocusedTopTab`, `navigationRef` |
 | `src/screens.tsx` | `lazy()` and what a navigator actually mounts for a route |
 | `src/Screen.tsx`, `src/Header.tsx` | `<Screen>`, `<Header>` |
 | `bin/codegen.js` | derives `RouteParams` from the tree via the TS checker (`--watch`) |

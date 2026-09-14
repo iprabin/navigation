@@ -5,7 +5,14 @@ import { buildRegistry, Route, Root, Tab } from "../src/tree";
 import { lazy as lazyScreen, screenComponent } from "../src/screens";
 import type { ScreenComponent } from "../src/types";
 import { byName, register, reset, validate } from "../src/registry";
-import { findRoute, getPathFromState, getStateFromPath } from "../src/linking";
+import {
+  findRoute,
+  getPathFromState,
+  getStateFromPath,
+  matchPath,
+  setPrefixes,
+  stripPrefix,
+} from "../src/linking";
 
 const noop = (() => null) as never;
 
@@ -253,5 +260,42 @@ assert.equal(
   undefined,
   "an unmounted bar reads undefined",
 );
+
+// A static segment beats a param at the same depth: /item/new is not id 'new'.
+reset();
+register({
+  name: "Shop",
+  kind: "tab",
+  tab: "Shop",
+  path: "",
+  initialRoute: "Item",
+});
+register({
+  name: "Item",
+  kind: "screen",
+  tab: "Shop",
+  path: "item/:id",
+  component: noop,
+});
+register({
+  name: "NewItem",
+  kind: "screen",
+  tab: "Shop",
+  path: "item/new",
+  component: noop,
+});
+validate();
+assert.equal(matchPath("/item/new")?.entry.name, "NewItem");
+assert.deepEqual(matchPath("/item/7")?.params, { id: "7" });
+
+// What push('https://myapp.com/x') resolves: a declared prefix is stripped
+// whole, an undeclared scheme loses just its scheme.
+setPrefixes(["myapp://", "https://myapp.com", "exp://127.0.0.1:8081/--"]);
+assert.equal(stripPrefix("https://myapp.com/item/7"), "/item/7");
+assert.equal(stripPrefix("exp://127.0.0.1:8081/--/item/7"), "/item/7");
+assert.equal(stripPrefix("myapp://item/7"), "/item/7");
+assert.equal(stripPrefix("/item/7"), "/item/7");
+setPrefixes([]);
+assert.equal(stripPrefix("other://item/7"), "/item/7");
 
 console.log("linking.check.ts: ok");
